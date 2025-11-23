@@ -1,0 +1,62 @@
+#!/bin/bash
+
+show_help() {
+    echo "Используем: userhome [-f файл] имя_юзера"
+    echo "  -f файл   можно другой файл вместо /etc/passwd"
+    echo "  имя_юзера   если не писать то возьмет текущего"
+    echo "  --help     эта подсказка"
+    echo "  --usage    краткая инфа"
+}
+
+if [ "$1" = "--help" ] || [ "$1" = "--usage" ]; then
+    show_help
+    exit 0
+fi
+
+PASSWD_FILE="/etc/passwd"
+USERNAME=""
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -f)
+            if [ -z "$2" ]; then
+                echo "нада файл после -f" >&2
+                show_help
+                exit 1
+            fi
+            PASSWD_FILE="$2"
+            shift 2
+            ;;
+        *)
+            if [ -z "$USERNAME" ]; then
+                USERNAME="$1"
+                shift
+            else
+                echo "много аргументов" >&2
+                show_help
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+if [ -z "$USERNAME" ]; then
+    USERNAME=$(whoami)
+fi
+
+if [ ! -f "$PASSWD_FILE" ]; then
+    echo "файл '$PASSWD_FILE' не найден" >&2
+    exit 2
+fi
+
+USER_LINE=$(grep "^$USERNAME:" "$PASSWD_FILE")
+
+if [ -z "$USER_LINE" ]; then
+    echo "юзверь '$USERNAME' не найден" >&2
+    exit 1
+fi
+
+HOME_DIR=$(echo "$USER_LINE" | cut -d: -f6)
+echo "$HOME_DIR"
+exit 0
+
