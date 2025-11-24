@@ -45,12 +45,12 @@ for dir in "${dirs[@]}"; do
         echo "Skip $dir - not dir" >&2
         continue
     fi
-    
-    if [ $d -eq 1 ] || [ $v -eq 1 ]; then
+
+    if [ $d -eq 1 ]; then
         find "$dir" -type f -mtime "+$days"
-    fi
-    
-    if [ $d -eq 0 ]; then
-        find "$dir" -type f -mtime "+$days" -delete
+    elif [ $v -eq 1 ]; then
+        find "$dir" -type f -mtime "+$days" -print -delete
     fi
 done
+
+exit 0
